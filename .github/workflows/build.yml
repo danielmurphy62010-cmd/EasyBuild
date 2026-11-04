@@ -1,0 +1,44 @@
+name: Compile code
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    name: Build on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+      - name: Set up Miniconda
+        uses: conda-incubator/setup-miniconda@v4
+        with:
+          miniconda-version: latest
+          activate-environment: ""
+          auto-activate: false
+          auto-update-conda: false
+          conda-solver: libmamba
+          channels: conda-forge
+          channel-priority: strict
+      - name: Build configured modules
+        shell: bash
+        run: |
+          python build/setup.py build \
+            --config build/build_config.json \
+            --output "$RUNNER_TEMP/native-builds" \
+            --workers 4
+      - name: Upload build results
+        uses: actions/upload-artifact@v4
+        with:
+          name: native-builds-${{ matrix.os }}
+          path: ${{ runner.temp }}/native-builds
+          if-no-files-found: error
+          retention-days: 1
