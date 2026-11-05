@@ -1258,7 +1258,7 @@ def execute_task(task: dict[str, Any]) -> dict[str, Any]:
     try:
         if task["language"] in {"c", "cpp"} and task["target"] != "python_extension":
             files = build_native_c_cpp(task)
-        elif task["target"] == "python_extension":
+        elif task["language"] == "cpp" and task["target"] == "python_extension":
             files = build_cpp_extension(task)
         elif task["language"] == "rust":
             files = build_rust(task)
